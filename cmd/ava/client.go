@@ -1,28 +1,31 @@
 package ava
 
 import (
-	"bytes"
 	netURL "net/url"
+	"strings"
 	"sync"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
-	"github.com/rs/zerolog/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 )
 
 const (
-	moodleSession = "MoodleSession"
-	avaLoginURL   = "https://ava.ufms.br/login/index.php"
+	invalidLoginMsg = "Invalid login, please try again\nInvalid login, please try again\nAVA UFMS - ENSINO"
+	moodleSession   = "MoodleSession"
+	avaLoginURL     = "https://ava.ufms.br/login/index.php"
 )
 
-var linksMap = make(map[string]string)
+func Visit(url, username, password string) {
+	log.Debugf("url: %s, username: %s, password: %s", url, username, password)
 
-func RodVisit(url, username, password string) {
+	linksMap := NewLinks()
 	loop := true
 	l := launcher.New().Headless(true)
 	launchURL := l.MustLaunch()
 	browser := rod.New().ControlURL(launchURL).MustConnect()
+
 	defer browser.MustClose()
 
 	page := browser.MustPage(avaLoginURL)
@@ -33,6 +36,11 @@ func RodVisit(url, username, password string) {
 
 	page.MustWaitLoad()
 
+	if strings.Contains(page.MustElement("body").MustText(), invalidLoginMsg) {
+		log.Error("Invalid credentials, please try again")
+		return
+	}
+
 	sessionCookie := ""
 	cookies := page.MustCookies()
 	for _, cookie := range cookies {
@@ -40,12 +48,15 @@ func RodVisit(url, username, password string) {
 			sessionCookie = cookie.Value
 		}
 	}
+
+	log.Debugf("session cookie: %s", sessionCookie)
+	log.Info("Logged in successfully")
+
 	page = browser.MustPage(url)
 
 	wg := sync.WaitGroup{}
 	for loop {
-		page.MustReload()
-		page.MustWaitLoad()
+		page.MustReload().MustWaitLoad()
 
 		links := page.MustElements("a.aalink")
 
@@ -61,20 +72,23 @@ func RodVisit(url, username, password string) {
 
 				parsedURL, err := netURL.Parse(href)
 				if err != nil {
-					log.Error().Msgf("error parsing url: %v", err)
+					log.Debugf("error parsing url: %v", err)
 					return
 				}
 
 				queryParams := parsedURL.Query()
 				if _, exists := queryParams["id"]; exists {
-					log.Info().Msgf("link found': %s", href)
-					if linksMap[href] != "" {
-						log.Info().Msgf("link already visited: %s", href)
+					log.Debugf("Link found: %s", href)
+
+					if _, visited := linksMap.Get(href); visited {
+						log.Debugf("link already visited: %s", href)
 						return
 					}
+
 					allLinksVisited = false
-					_ = Get(href, sessionCookie)
-					linksMap[href] = href
+					go Get(href, sessionCookie)
+
+					linksMap.Set(href, href)
 				}
 			}(link)
 		}
@@ -82,13 +96,13 @@ func RodVisit(url, username, password string) {
 		wg.Wait()
 
 		if allLinksVisited {
-			log.Info().Msg("all links visited")
+			log.Info("All available links visited")
 			loop = false
 		}
 	}
 }
 
-func Get(url, sessionCookie string) string {
+func Get(url, sessionCookie string) {
 	client := &fasthttp.Client{}
 	req := fasthttp.AcquireRequest()
 	req.SetRequestURI(url)
@@ -98,11 +112,8 @@ func Get(url, sessionCookie string) string {
 	resp := fasthttp.AcquireResponse()
 	err := client.Do(req, resp)
 	if err != nil {
-		log.Error().Msgf("error making request: %v", err)
+		log.Errorf("error making request: %v", err)
 	}
 	defer fasthttp.ReleaseRequest(req)
 	defer fasthttp.ReleaseResponse(resp)
-	b := bytes.Clone(resp.Body())
-	body := string(b)
-	return body
 }
