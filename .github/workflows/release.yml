@@ -32,13 +32,14 @@ jobs:
           # Delete all tags
           git tag -l | xargs -n 1 git tag -d
           git fetch --tags
-          git tag -l | xargs -n 1 -I {} git push --delete origin {}
-        
+          git tag -l | xargs -n 1 git push --delete origin
+
+          # Check if there are any releases
           if [ -z "$(gh release list)" ]; then
             echo "No releases found"
             exit 0
           fi
-          
+
           # Delete all releases
           releases=$(gh release list --limit 100 | awk '{print $1}')
           for release in $releases; do
