@@ -34,13 +34,7 @@ jobs:
           go build -o ./bin/ava-linux .
           git tag -d "linux-release" || true
           git push --delete origin "linux-release" || true
-          git tag -a "linux-release" -m "Linux release"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Linux tag
-        run: |
-          git push origin "linux-release"
+          @TAG="linux-$$(date '+%Y-%m-%d-%H-%M')" && git tag $$TAG && git push origin $$TAG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -48,7 +42,7 @@ jobs:
         id: create_linux_release
         uses: actions/create-release@v1
         with:
-          tag_name: linux-release
+          tag_name: ${{ steps.build-and-release.outputs.TAG }}
           release_name: "Linux Release"
           draft: false
           prerelease: false
@@ -72,13 +66,7 @@ jobs:
           go build -o ./bin/ava-windows.exe .
           git tag -d "windows-release" || true
           git push --delete origin "windows-release" || true
-          git tag -a "windows-release" -m "Windows release"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Windows tag
-        run: |
-          git push origin "windows-release"
+          @TAG="windows-$$(date '+%Y-%m-%d-%H-%M')" && git tag $$TAG && git push origin $$TAG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -86,7 +74,7 @@ jobs:
         id: create_windows_release
         uses: actions/create-release@v1
         with:
-          tag_name: windows-release
+          tag_name: ${{ steps.build-and-release.outputs.TAG }}
           release_name: "Windows Release"
           draft: false
           prerelease: false
@@ -110,13 +98,7 @@ jobs:
           go build -o ./bin/ava-mac .
           git tag -d "mac-release" || true
           git push --delete origin "mac-release" || true
-          git tag -a "mac-release" -m "Mac release"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Mac tag
-        run: |
-          git push origin "mac-release"
+          @TAG="mac-$$(date '+%Y-%m-%d-%H-%M')" && git tag $$TAG && git push origin $$TAG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -124,7 +106,7 @@ jobs:
         id: create_mac_release
         uses: actions/create-release@v1
         with:
-          tag_name: mac-release
+          tag_name: ${{ steps.build-and-release.outputs.TAG }}
           release_name: "Mac Release"
           draft: false
           prerelease: false
