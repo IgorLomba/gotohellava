@@ -34,7 +34,7 @@ jobs:
           go build -o ./bin/ava-linux .
           git tag -d "linux-release" || true
           git push --delete origin "linux-release" || true
-          @TAG="linux-$$(date '+%Y-%m-%d-%H-%M')" && git tag $$TAG && git push origin $$TAG
+          TAG="linux-$(date '+%Y-%m-%d-%H-%M')" && git tag $TAG && git push origin $TAG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -66,7 +66,7 @@ jobs:
           go build -o ./bin/ava-windows.exe .
           git tag -d "windows-release" || true
           git push --delete origin "windows-release" || true
-          @TAG="windows-$$(date '+%Y-%m-%d-%H-%M')" && git tag $$TAG && git push origin $$TAG
+          TAG="windows-$(date '+%Y-%m-%d-%H-%M')" && git tag $TAG && git push origin $TAG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -98,7 +98,7 @@ jobs:
           go build -o ./bin/ava-mac .
           git tag -d "mac-release" || true
           git push --delete origin "mac-release" || true
-          @TAG="mac-$$(date '+%Y-%m-%d-%H-%M')" && git tag $$TAG && git push origin $$TAG
+          TAG="mac-$(date '+%Y-%m-%d-%H-%M')" && git tag $TAG && git push origin $TAG
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
