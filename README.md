@@ -85,3 +85,5 @@ To use AVA CLI, run the following command:
 ```bash
 ./bin/ava visit 'https://ava.ufms.br/course/view.php?id=xxxx' -u 'username' -p 'password'
 ```
+![image](https://github.com/user-attachments/assets/5cd27fdc-4583-4c33-9e56-112429ea7c87)
+
