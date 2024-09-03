@@ -32,6 +32,8 @@ jobs:
           export GOOS=linux
           export GOARCH=amd64
           go build -o ./bin/ava-linux .
+          git tag -d "linux-release" || true
+          git push --delete origin "linux-release" || true
           git tag -a "linux-release" -m "Linux release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,6 +69,8 @@ jobs:
           export GOOS=windows
           export GOARCH=amd64
           go build -o ./bin/ava-windows.exe .
+          git tag -d "windows-release" || true
+          git push --delete origin "windows-release" || true
           git tag -a "windows-release" -m "Windows release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -102,6 +106,8 @@ jobs:
           export GOOS=darwin
           export GOARCH=amd64
           go build -o ./bin/ava-mac .
+          git tag -d "mac-release" || true
+          git push --delete origin "mac-release" || true
           git tag -a "mac-release" -m "Mac release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
