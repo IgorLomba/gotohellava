@@ -29,6 +29,9 @@ jobs:
 
       - name: Delete all previous tags and releases
         run: |
+          # List of releases to exclude from deletion
+          EXCLUDE_RELEASES=("v1.0.0" "v2.0.0")  # Add your excluded releases here
+          
           # Delete all local tags
           git tag -l | xargs -n 1 git tag -d
           
@@ -45,13 +48,17 @@ jobs:
             echo "No releases found"
           else
             echo "Releases found"
-            # Delete all releases
+            # Delete all releases except those in the EXCLUDE_RELEASES list
             releases=$(gh release list --limit 100 | awk '{print $1}')
             for release in $releases; do
-              if gh release view "$release" > /dev/null 2>&1; then
-                gh release delete "$release" -y
+              if [[ " ${EXCLUDE_RELEASES[@]} " =~ " ${release} " ]]; then
+                echo "Skipping release $release"
               else
-                echo "Release $release not found"
+                if gh release view "$release" > /dev/null 2>&1; then
+                  gh release delete "$release" -y
+                else
+                  echo "Release $release not found"
+                fi
               fi
             done
           fi
@@ -59,6 +66,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: /usr/bin/bash -e {0}
+
 
       - name: Set timestamp
         id: timestamp
