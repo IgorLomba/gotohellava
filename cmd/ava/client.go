@@ -17,23 +17,19 @@ const (
 	avaLoginURL     = "https://ava.ufms.br/login/index.php"
 )
 
+var linksMap = new(sync.Map)
+
 func Visit(url, username, password string) {
 	log.Debugf("url: %s, username: %s, password: %s", url, username, password)
 
-	linksMap := NewLinks()
-	loop := true
 	l := launcher.New().Headless(true)
-	launchURL := l.MustLaunch()
-	browser := rod.New().ControlURL(launchURL).MustConnect()
-
+	browser := rod.New().ControlURL(l.MustLaunch()).MustConnect()
 	defer browser.MustClose()
 
 	page := browser.MustPage(avaLoginURL)
-
 	page.MustElement("#username").MustInput(username)
 	page.MustElement("#password").MustInput(password)
 	page.MustElement("#loginbtn").MustClick()
-
 	page.MustWaitLoad()
 
 	if strings.Contains(page.MustElement("body").MustText(), invalidLoginMsg) {
@@ -41,11 +37,11 @@ func Visit(url, username, password string) {
 		return
 	}
 
-	sessionCookie := ""
-	cookies := page.MustCookies()
-	for _, cookie := range cookies {
-		if cookie.Name == "MoodleSession" {
+	var sessionCookie string
+	for _, cookie := range page.MustCookies() {
+		if cookie.Name == moodleSession {
 			sessionCookie = cookie.Value
+			break
 		}
 	}
 
@@ -53,14 +49,13 @@ func Visit(url, username, password string) {
 	log.Info("Logged in successfully")
 
 	page = browser.MustPage(url)
-
 	wg := sync.WaitGroup{}
-	for loop {
+
+	for {
 		page.MustReload().MustWaitLoad()
-
 		links := page.MustElements("a.aalink")
-
 		allLinksVisited := true
+
 		for _, link := range links {
 			wg.Add(1)
 			go func(l *rod.Element) {
@@ -72,33 +67,30 @@ func Visit(url, username, password string) {
 
 				parsedURL, err := netURL.Parse(href)
 				if err != nil {
-					log.Debugf("error parsing url: %v", err)
+					log.Errorf("error parsing url: %v", err)
 					return
 				}
 
-				queryParams := parsedURL.Query()
-				if _, exists := queryParams["id"]; exists {
-					log.Debugf("Link found: %s", href)
-
-					if _, visited := linksMap.Get(href); visited {
+				if _, exists := parsedURL.Query()["id"]; exists {
+					log.Debugf("link found: %s", href)
+					if _, visited := linksMap.Load(href); visited {
 						log.Debugf("link already visited: %s", href)
 						return
 					}
 
 					allLinksVisited = false
-					go Get(href, sessionCookie)
-
-					linksMap.Set(href, href)
+					Get(href, sessionCookie)
+					linksMap.Store(href, href)
 				}
 			}(link)
 		}
 
 		wg.Wait()
-
 		if allLinksVisited {
-			log.Info("All available links visited")
-			loop = false
+			log.Info("All links visited")
+			break
 		}
+		log.Info("Reloading page...")
 	}
 }
 
