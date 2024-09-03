@@ -27,20 +27,24 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
+      - name: Set timestamp
+        id: timestamp
+        run: echo "TIMESTAMP=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
       - name: Build for Linux
         run: |
           export GOOS=linux
           export GOARCH=amd64
           go build -o ./bin/ava-linux .
-          git tag -d "linux-release" || true
-          git push --delete origin "linux-release" || true
-          git tag -a "linux-release" -m "Linux release"
+          git tag -d "linux-release-${{ env.TIMESTAMP }}" || true
+          git push --delete origin "linux-release-${{ env.TIMESTAMP }}" || true
+          git tag -a "linux-release-${{ env.TIMESTAMP }}" -m "Linux release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Linux tag
         run: |
-          git push origin "linux-release"
+          git push origin "linux-release-${{ env.TIMESTAMP }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -48,7 +52,7 @@ jobs:
         id: create_linux_release
         uses: actions/create-release@v1
         with:
-          tag_name: linux-release-$(date '+%Y-%m-%d-%H-%M')
+          tag_name: "linux-release-${{ env.TIMESTAMP }}"
           release_name: "Linux Release"
           draft: false
           prerelease: false
@@ -70,15 +74,15 @@ jobs:
           export GOOS=windows
           export GOARCH=amd64
           go build -o ./bin/ava-windows.exe .
-          git tag -d "windows-release" || true
-          git push --delete origin "windows-release" || true
-          git tag -a "windows-release" -m "Windows release"
+          git tag -d "windows-release-${{ env.TIMESTAMP }}" || true
+          git push --delete origin "windows-release-${{ env.TIMESTAMP }}" || true
+          git tag -a "windows-release-${{ env.TIMESTAMP }}" -m "Windows release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Windows tag
         run: |
-          git push origin "windows-release"
+          git push origin "windows-release-${{ env.TIMESTAMP }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -86,7 +90,7 @@ jobs:
         id: create_windows_release
         uses: actions/create-release@v1
         with:
-          tag_name: windows-release-$(date '+%Y-%m-%d-%H-%M')
+          tag_name: "windows-release-${{ env.TIMESTAMP }}"
           release_name: "Windows Release"
           draft: false
           prerelease: false
@@ -108,15 +112,15 @@ jobs:
           export GOOS=darwin
           export GOARCH=amd64
           go build -o ./bin/ava-mac .
-          git tag -d "mac-release" || true
-          git push --delete origin "mac-release" || true
-          git tag -a "mac-release" -m "Mac release"
+          git tag -d "mac-release-${{ env.TIMESTAMP }}" || true
+          git push --delete origin "mac-release-${{ env.TIMESTAMP }}" || true
+          git tag -a "mac-release-${{ env.TIMESTAMP }}" -m "Mac release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Mac tag
         run: |
-          git push origin "mac-release"
+          git push origin "mac-release-${{ env.TIMESTAMP }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -124,7 +128,7 @@ jobs:
         id: create_mac_release
         uses: actions/create-release@v1
         with:
-          tag_name: mac-release-$(date '+%Y-%m-%d-%H-%M')
+          tag_name: "mac-release-${{ env.TIMESTAMP }}"
           release_name: "Mac Release"
           draft: false
           prerelease: false
