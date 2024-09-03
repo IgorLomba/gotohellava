@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
+	"github.com/schollz/progressbar/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 )
@@ -22,8 +23,7 @@ var linksMap = new(sync.Map)
 func Visit(url, username, password string) {
 	log.Debugf("url: %s, username: %s, password: %s", url, username, password)
 
-	l := launcher.New().Headless(true)
-	browser := rod.New().ControlURL(l.MustLaunch()).MustConnect()
+	browser := rod.New().ControlURL(launcher.New().Headless(true).MustLaunch()).MustConnect()
 	defer browser.MustClose()
 
 	page := browser.MustPage(avaLoginURL)
@@ -51,10 +51,23 @@ func Visit(url, username, password string) {
 	page = browser.MustPage(url)
 	wg := sync.WaitGroup{}
 
+	barEnabled := !log.IsLevelEnabled(log.DebugLevel)
+
+	var bar *progressbar.ProgressBar
 	for {
 		page.MustReload().MustWaitLoad()
 		links := page.MustElements("a.aalink")
 		allLinksVisited := true
+
+		if barEnabled {
+			if bar == nil {
+				bar = progressbar.Default(int64(len(links)))
+				bar.Describe("Visiting links")
+			} else {
+				bar.Describe("Visiting links")
+				bar.ChangeMax(len(links))
+			}
+		}
 
 		for _, link := range links {
 			wg.Add(1)
@@ -82,15 +95,17 @@ func Visit(url, username, password string) {
 					Get(href, sessionCookie)
 					linksMap.Store(href, href)
 				}
+
+				if barEnabled {
+					_ = bar.Add(1)
+				}
 			}(link)
 		}
 
 		wg.Wait()
 		if allLinksVisited {
-			log.Info("All links visited")
 			break
 		}
-		log.Info("Reloading page...")
 	}
 }
 

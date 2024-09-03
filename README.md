@@ -82,5 +82,5 @@ To use AVA CLI, run the following command:
 ```
 
 ```bash
-./bin/ava visit 'https://ava.ufms.br/course/view.php?id=xxxx' -u 'username' -p 'password' -v
+./bin/ava visit 'https://ava.ufms.br/course/view.php?id=xxxx' -u 'username' -p 'password'
 ```
