@@ -37,14 +37,14 @@ jobs:
           # Check if there are any releases
           if [ -z "$(gh release list)" ]; then
             echo "No releases found"
-            exit 0
+          else
+            echo "Releases found"
+            # Delete all releases
+            releases=$(gh release list --limit 100 | awk '{print $1}')
+            for release in $releases; do
+              gh release delete $release -y
+            done
           fi
-
-          # Delete all releases
-          releases=$(gh release list --limit 100 | awk '{print $1}')
-          for release in $releases; do
-            gh release delete $release -y
-          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
