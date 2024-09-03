@@ -32,7 +32,7 @@ jobs:
           # Delete all tags
           git tag -l | xargs -n 1 git tag -d
           git fetch --tags
-          git tag -l | xargs -n 1 -I {} git push --delete origin {}
+          git tag -l | xargs -n 1 git push --delete origin
 
           # Delete all releases
           releases=$(gh release list --limit 100 | awk '{print $1}')
@@ -42,6 +42,7 @@ jobs:
             done
           else
             echo "No releases found"
+            exit 0
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
