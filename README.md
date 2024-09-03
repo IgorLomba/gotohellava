@@ -1,10 +1,11 @@
 <br />
 <p align="center">
 
-<h3 align="center">AVA-CLI</h3>
+<h1 align="center">AVA-CLI</h1>
 
 <p align="center">
-    AVA CLI is a command-line tool designed to access ava.ufms.br website and visit all available links within that course.
+    A command-line tool designed to access ava.ufms.br website and visit all available links within that course.
+    The goal here is to automate the process of visiting all links in a course until the student needs to complete some task or quiz to continue.
 <br />
 </p>
 
