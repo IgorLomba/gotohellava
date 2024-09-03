@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Build for Linux
+        run: |
+          export GOOS=linux
+          export GOARCH=amd64
+          go build -o ./bin/ava .
+          git tag -a "linux-release" -m "Linux release"
+          git push origin "linux-release"
+
+      - name: Build for Windows
+        run: |
+          export GOOS=windows
+          export GOARCH=amd64
+          go build -o ./bin/ava.exe .
+          git tag -a "windows-release" -m "Windows release"
+          git push origin "windows-release"
+
+      - name: Build for Mac
+        run: |
+          export GOOS=darwin
+          export GOARCH=amd64
+          go build -o ./bin/ava .
+          git tag -a "mac-release" -m "Mac release"
+          git push origin "mac-release"
