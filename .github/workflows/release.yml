@@ -48,16 +48,22 @@ jobs:
             echo "No releases found"
           else
             echo "Releases found"
-            # Delete all releases except those in the EXCLUDE_RELEASES list
+            # Delete all releases except those in the EXCLUDE_RELEASES list or drafts
             releases=$(gh release list --limit 100 | awk '{print $1}')
             for release in $releases; do
               if [[ " ${EXCLUDE_RELEASES[@]} " =~ " ${release} " ]]; then
-                echo "Skipping release $release"
+                echo "Skipping release $release (excluded)"
               else
-                if gh release view "$release" > /dev/null 2>&1; then
-                  gh release delete "$release" -y
+                # Check if the release is a draft
+                if gh release view "$release" --json draft -q '.draft' | grep true > /dev/null 2>&1; then
+                  echo "Skipping release $release (draft)"
                 else
-                  echo "Release $release not found"
+                  # Delete the release if it isn't a draft and isn't excluded
+                  if gh release view "$release" > /dev/null 2>&1; then
+                    gh release delete "$release" -y
+                  else
+                    echo "Release $release not found"
+                  fi
                 fi
               fi
             done
@@ -66,7 +72,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: /usr/bin/bash -e {0}
-
 
       - name: Set timestamp
         id: timestamp
