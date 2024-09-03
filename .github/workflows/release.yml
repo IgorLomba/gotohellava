@@ -36,7 +36,9 @@ jobs:
           git fetch --tags
           
           # Delete all remote tags
-          git tag -l | xargs -n 1 -I {} git push --delete origin {}
+          git tag -l | while read -r tag; do
+            git push --delete origin "$tag"
+          done
           
           # Check if there are any releases
           if [ -z "$(gh release list)" ]; then
@@ -46,7 +48,11 @@ jobs:
             # Delete all releases
             releases=$(gh release list --limit 100 | awk '{print $1}')
             for release in $releases; do
-              gh release delete $release -y
+              if gh release view "$release" > /dev/null 2>&1; then
+                gh release delete "$release" -y
+              else
+                echo "Release $release not found"
+              fi
             done
           fi
         env:
