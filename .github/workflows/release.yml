@@ -31,7 +31,7 @@ jobs:
         run: |
           export GOOS=linux
           export GOARCH=amd64
-          go build -o ./bin/ava .
+          go build -o ./bin/ava-linux .
           git tag -a "linux-release" -m "Linux release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,11 +42,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create Linux release
+        uses: actions/create-release@v1
+        with:
+          tag_name: linux-release
+          release_name: "Linux Release"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/ava-linux
+          asset_name: ava-linux
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build for Windows
         run: |
           export GOOS=windows
           export GOARCH=amd64
-          go build -o ./bin/ava.exe .
+          go build -o ./bin/ava-windows.exe .
           git tag -a "windows-release" -m "Windows release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,11 +77,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create Windows release
+        uses: actions/create-release@v1
+        with:
+          tag_name: windows-release
+          release_name: "Windows Release"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/ava-windows.exe
+          asset_name: ava-windows.exe
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build for Mac
         run: |
           export GOOS=darwin
           export GOARCH=amd64
-          go build -o ./bin/ava .
+          go build -o ./bin/ava-mac .
           git tag -a "mac-release" -m "Mac release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,5 +109,25 @@ jobs:
       - name: Push Mac tag
         run: |
           git push origin "mac-release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Mac release
+        uses: actions/create-release@v1
+        with:
+          tag_name: mac-release
+          release_name: "Mac Release"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Mac binary
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/ava-mac
+          asset_name: ava-mac
+          asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
