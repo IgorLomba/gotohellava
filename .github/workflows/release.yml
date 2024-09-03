@@ -29,7 +29,14 @@ jobs:
           export GOARCH=amd64
           go build -o ./bin/ava .
           git tag -a "linux-release" -m "Linux release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Linux tag
+        run: |
           git push origin "linux-release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build for Windows
         run: |
@@ -37,7 +44,14 @@ jobs:
           export GOARCH=amd64
           go build -o ./bin/ava.exe .
           git tag -a "windows-release" -m "Windows release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Windows tag
+        run: |
           git push origin "windows-release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build for Mac
         run: |
@@ -45,4 +59,11 @@ jobs:
           export GOARCH=amd64
           go build -o ./bin/ava .
           git tag -a "mac-release" -m "Mac release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Mac tag
+        run: |
           git push origin "mac-release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
