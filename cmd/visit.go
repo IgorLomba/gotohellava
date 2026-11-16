@@ -14,6 +14,7 @@ const (
 var (
 	username string
 	password string
+	headed   bool
 )
 
 var visit = &cobra.Command{
@@ -26,12 +27,13 @@ Visit the course page clicking in all links and reloading until not finding any 
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Visiting the course page")
 		url := args[0] + section
-		ava.Visit(url, username, password)
+		ava.Visit(url, username, password, headed)
 	},
 }
 
 func init() {
 	visit.PersistentFlags().StringVarP(&username, "username", "u", "", "Username to login")
 	visit.PersistentFlags().StringVarP(&password, "password", "p", "", "Password to login")
+	visit.PersistentFlags().BoolVar(&headed, "headed", false, "Show the browser window while it works")
 	rootCmd.AddCommand(visit)
 }
